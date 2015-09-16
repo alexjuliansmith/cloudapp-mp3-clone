@@ -3,6 +3,11 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import backtype.storm.spout.SpoutOutputCollector;
@@ -11,22 +16,32 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
+import backtype.storm.utils.Utils;
 
 public class FileReaderSpout implements IRichSpout {
+	
+  public static final String FILE_KEY = "file";
+  
   private SpoutOutputCollector _collector;
   private TopologyContext context;
-
+  
+  private Iterator<String>  lines;
 
   @Override
-  public void open(Map conf, TopologyContext context,
-                   SpoutOutputCollector collector) {
+  public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
 
      /*
-    ----------------------TODO-----------------------
-    Task: initialize the file reader
+    ---------------------------------------------
+    Task: initialize the file reader */
+	String file = conf.get(FILE_KEY).toString();
 
-
-    ------------------------------------------------- */
+    try {
+    	lines = Files.readAllLines(Paths.get(file), Charset.defaultCharset()).iterator();
+	} catch (IOException e) {
+		System.err.println("Couldn't find: " + file);
+		e.printStackTrace();
+	}
+   /* ------------------------------------------------- */
 
     this.context = context;
     this._collector = collector;
@@ -36,12 +51,19 @@ public class FileReaderSpout implements IRichSpout {
   public void nextTuple() {
 
      /*
-    ----------------------TODO-----------------------
+    ---------------------------------------------
     Task:
     1. read the next line and emit a tuple for it
-    2. don't forget to sleep when the file is entirely read to prevent a busy-loop
+    2. don't forget to sleep when the file is entirely read to prevent a busy-loop*/
+	  
+	 if (lines.hasNext()) {
+		 String next = lines.next().trim();
+		 if (next.length() > 0) _collector.emit(new Values(next));  // only emit if the line is not blank
+	 } else {
+		 Utils.sleep(1000); // prevent busy loop when spout is exhausted 
+	 }
 
-    ------------------------------------------------- */
+   /* ------------------------------------------------- */
 
 
   }
@@ -56,9 +78,9 @@ public class FileReaderSpout implements IRichSpout {
   @Override
   public void close() {
    /*
-    ----------------------TODO-----------------------
+    ---------------------------------------------
     Task: close the file
-
+    // nothing to do file open and closed in open();
 
     ------------------------------------------------- */
 

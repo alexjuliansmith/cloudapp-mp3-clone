@@ -36,15 +36,17 @@ public class TopNFinderBolt extends BaseBasicBolt {
 		  currentTopWords.put(tuple.getStringByField(WordCountBolt.WORD_FIELD), count);
 		  if (currentTopWords.size() > N) {
 			  int nextSmallest = Integer.MAX_VALUE;
+			  String oneToRemove = "";
 			  for (Map.Entry<String, Integer> next : currentTopWords.entrySet()) {
 				  int nextCount = next.getValue();
-				  if (nextCount == smallestTopCount) {
-					  currentTopWords.remove(next.getKey());  //TODO, small bug here: because it may remove several if they all share the same min.
-				  } else {
-					  if (nextCount < nextSmallest) nextSmallest = nextCount;
-				  }
+				  if (nextCount == smallestTopCount) 
+					  oneToRemove = next.getKey();  
+				  else if (nextCount < nextSmallest) 
+					  nextSmallest = nextCount;
 			  }
-			  smallestTopCount = nextSmallest;
+			  currentTopWords.remove(oneToRemove);
+			  if (nextSmallest != Integer.MAX_VALUE)
+				  smallestTopCount = nextSmallest;
 		  }
 		  
 	  }

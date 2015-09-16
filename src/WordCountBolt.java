@@ -10,7 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class WordCountBolt extends BaseBasicBolt {
-  Map<String, Integer> counts = new HashMap<String, Integer>();
+	
+  public static final String COUNT_FIELD = "count";
+  public static final String WORD_FIELD = "word";
+  
+Map<String, Integer> counts = new HashMap<String, Integer>();
+  
+  
 
   @Override
   public void execute(Tuple tuple, BasicOutputCollector collector) {
@@ -25,6 +31,6 @@ public class WordCountBolt extends BaseBasicBolt {
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("word", "count"));
+    declarer.declare(new Fields(WORD_FIELD, COUNT_FIELD));
   }
 }

@@ -6,6 +6,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * a bolt that finds the top n words.
@@ -16,6 +17,8 @@ public class TopNFinderBolt extends BaseBasicBolt {
 
   private long intervalToReport = 20;
   private long lastReportTime = System.currentTimeMillis();
+  
+  private int smallestTopCount = 0;
 
   public TopNFinderBolt(int N) {
     this.N = N;
@@ -25,10 +28,29 @@ public class TopNFinderBolt extends BaseBasicBolt {
   public void execute(Tuple tuple, BasicOutputCollector collector) {
  /*
     ----------------------TODO-----------------------
-    Task: keep track of the top N words
+    Task: keep track of the top N words */
+	  
+	  int count = tuple.getIntegerByField(WordCountBolt.COUNT_FIELD);
+
+	  if (count > smallestTopCount || currentTopWords.size() < N) { 
+		  currentTopWords.put(tuple.getStringByField(WordCountBolt.WORD_FIELD), count);
+		  if (currentTopWords.size() > N) {
+			  int nextSmallest = Integer.MAX_VALUE;
+			  for (Map.Entry<String, Integer> next : currentTopWords.entrySet()) {
+				  int nextCount = next.getValue();
+				  if (nextCount == smallestTopCount) {
+					  currentTopWords.remove(next.getKey());  //TODO, small bug here: because it may remove several if they all share the same min.
+				  } else {
+					  if (nextCount < nextSmallest) nextSmallest = nextCount;
+				  }
+			  }
+			  smallestTopCount = nextSmallest;
+		  }
+		  
+	  }
 
 
-    ------------------------------------------------- */
+    /* ------------------------------------------------- */
 
 
     //reports the top N words periodically

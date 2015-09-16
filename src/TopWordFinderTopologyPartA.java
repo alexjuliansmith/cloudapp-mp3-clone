@@ -33,9 +33,20 @@ public class TopWordFinderTopologyPartA {
     RandomSentanceSpout -> "spout"
     SplitSentenceBolt -> "split"
     WordCountBolt -> "count"
+*/
 
+ builder.setSpout("spout", new RandomSentenceSpout(), 5);
+ builder.setBolt("split", new SplitSentenceBolt(), 8).shuffleGrouping("spout");
+ builder.setBolt("count", new WordCountBolt(), 12).fieldsGrouping("split", new Fields("word"));
+ 
+ 
+ //if (args != null && args.length > 0) {
+ //conf.setNumWorkers(3);
+ //StormSubmitter.submitTopology(args[0], conf, builder.createTopology());
+ //}
+ 
 
-    ------------------------------------------------- */
+   /* ------------------------------------------------- */
 
 
     config.setMaxTaskParallelism(3);
